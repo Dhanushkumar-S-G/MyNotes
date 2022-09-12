@@ -1,0 +1,66 @@
+Ref link : https://docs.djangoproject.com/en/4.1/topics/signals/#django.dispatch.Signal.connect
+
+Signals 
+		-> it works same as event and eventlistner in js
+		-> signals allow certain senders to notify a set of receivers that some action has taken place
+
+Django provides some built-in signals:
+		-> refer : https://docs.djangoproject.com/en/4.1/ref/signals/
+		
+Listening to signals
+	1.Register a receiver function
+			-> The receiver function is called when the signal is sent.
+			-> registering using connect function
+			
+				Signal.connect(receiver, sender=None, weak=True, dispatch_uid=None)[source]
+					Parameters:	
+							receiver – The callback function which will be connected to this signal.
+							sender – Specifies a particular sender to receive signals from.
+							weak – Django stores signal handlers as weak references by default. Thus, if your receiver is a local function, it may be garbage collected.                                    To prevent this, pass weak=False when you call the signal’s connect() method.
+							dispatch_uid – A unique identifier for a signal receiver in cases where duplicate signals may be sent. See Preventing duplicate signals for                                       more information.
+
+			-> using  receiver() decorator
+			
+				receiver(signal, **kwargs)
+				Parameters:	
+					signal – A signal or a list of signals to connect a function to.
+					kwargs – Wildcard keyword arguments to pass to a function.
+
+Defining signals
+
+	import django.dispatch
+	pizza_done = django.dispatch.Signal()
+
+Sendig signals
+
+	Signal.send(sender, **kwargs)
+	Signal.send_robust(sender, **kwargs)
+	
+	Example: 
+		def send_pizza(self, toppings, size):
+        	pizza_done.send(sender=self.__class__, toppings=toppings, size=size)
+	
+	-> send() differs from send_robust() in how exceptions raised by receiver functions are handled. send() does not catch any exceptions raised by receivers; it 		simply allows errors to propagate. Thus not all receivers may be notified of a signal in the face of an error.
+
+	-> send_robust() catches all errors derived from Python’s Exception class, and ensures all receivers are notified of the signal. If an error occurs, the error 		instance is returned in the tuple pair for the receiver that raised the error.
+	
+	
+Disconnecting signals
+	Signal.disconnect(receiver=None, sender=None, dispatch_uid=None)
+	
+	->The method returns True if a receiver was disconnected and False if not
+	
+Signals in separate file (signals.py)
+	-> while adding signals as a separate file, then the following code should be added in app.py file of that particular app.
+				
+				from django.apps import AppConfig
+				from django.core.signals import request_finished
+
+				class MyAppConfig(AppConfig):
+					...
+
+					def ready(self):
+						# Implicitly connect signal handlers decorated with @receiver.
+						from . import signals
+						# Explicitly connect a signal handler.
+						request_finished.connect(signals.my_callback)
