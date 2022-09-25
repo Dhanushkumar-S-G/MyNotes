@@ -23,3 +23,6 @@ cassandra
 va.tawk.to
 mixin in django
 wsgi vs  asgi
+sync vs async python
+heap
+trees
