@@ -26,3 +26,4 @@ wsgi vs  asgi
 sync vs async python
 heap
 trees
+django template tags
